@@ -1,17 +1,16 @@
 package main
 
 import (
-	"fmt"
 	"log"
-	"net/http"
+	"tenes-go/internal/server"
+	"tenes-go/pkg/config"
 )
 
 func main() {
-	http.HandleFunc("/", handleHome)
-	fmt.Println("Server starting on port 8080...")
-	log.Fatal(http.ListenAndServe(":8080", nil))
-}
+	cfg := config.Load()
+	srv := server.NewServer()
 
-func handleHome(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintf(w, "Welcome to my Go application!")
+	if err := srv.Start(cfg.Server.Port); err != nil {
+		log.Fatal(err)
+	}
 }
