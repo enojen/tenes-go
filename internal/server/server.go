@@ -3,6 +3,7 @@ package server
 import (
 	"log"
 	"net/http"
+	"time"
 )
 
 type Server struct {
@@ -18,7 +19,14 @@ func NewServer() *Server {
 func (s *Server) Start(port string) error {
 	s.routes()
 	log.Printf("Server starting on %s", port)
-	return http.ListenAndServe(port, s.router)
+
+	srv := &http.Server{
+		Addr:         port,
+		Handler:      s.router,
+		ReadTimeout:  15 * time.Second,
+		WriteTimeout: 15 * time.Second,
+	}
+	return srv.ListenAndServe()
 }
 
 func (s *Server) routes() {
@@ -28,6 +36,8 @@ func (s *Server) routes() {
 func (s *Server) handleHealth() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
-		w.Write([]byte("OK"))
+		if _, err := w.Write([]byte("OK")); err != nil {
+			log.Printf("Error writing response: %v", err)
+		}
 	}
 }
